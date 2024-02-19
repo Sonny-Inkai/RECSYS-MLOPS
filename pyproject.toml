@@ -12,6 +12,7 @@ pandas = "1.5.3"
 torch = "1.7.1"
 ray = "2.9.2"
 mlflow = "2.10.0"
+bentoml = "^1.2.2"
 
 
 [build-system]
