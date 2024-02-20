@@ -1,9 +1,7 @@
-
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-import math
 import pickle 
 
 from sklearn.preprocessing import StandardScaler
@@ -25,7 +23,7 @@ with open("..\\notebook\\x_train_alpha(1).pkl", 'rb') as file:
 # Loading model from bentoml, and turn it into original model when training
 bentoml_autoencoder_model = bentoml.mlflow.load_model(BENTO_AUTOENCODER_TAG)
 autoencoder = bentoml_autoencoder_model._model_impl.pytorch_model
-bentoml_kmeans_model = bentoml.mlflow.get(BENTO_KMEANS_TAG).to_runner()
+bentoml_kmeans_model = bentoml.mlflow.load_model(BENTO_KMEANS_TAG)
 kmeans = bentoml_kmeans_model._model_impl.sklearn_model
 
 # Set up device with gpu 
@@ -124,7 +122,6 @@ def get_top_reccommend(userid: int, topk: int, user_rarting_matrix: np.ndarray) 
     top_list_items = [item[0] for item in list_items[:topk]]
     return top_list_items
     
-
 @bentoml.service()
 class recommendation:
     @bentoml.api
@@ -139,14 +136,14 @@ class recommendation:
         X_train_tensor = torch.tensor(X_normalized, dtype=torch.float32).to(device)
 
         # Autoencoder model
-        encoded_featuers = autoencoder(X_train_tensor)
-
+        encoded_features = autoencoder(X_train_tensor).detach().numpy().astype('float')
+        
         # Kmeans clustering user by encoded features
-        cluster_labels = kmeans.predict(encoded_featuers)
+        cluster_labels = kmeans.predict(encoded_features)
         train_data.loc[:, 'cluster_label'] = cluster_labels[train_data['UID']-1]
 
         # Create Item rating based on Users in each cluster.
-        item_ratings_matrix = compute_item_ratings(num_clusters=np.unique(cluster_labels), train_data=train_data)
+        item_ratings_matrix = compute_item_ratings(num_clusters=len(np.unique(cluster_labels)), train_data=train_data)
 
         # Classify User into appropriate cluster.
         user_matrix = pd.DataFrame(cluster_labels, columns=['cluster_lable']).reset_index()
@@ -161,6 +158,6 @@ class recommendation:
         user_rating_matrix = user_item_matrix(user_cluster_matrix, update_rating_matrix)
 
         # Matching top k items with userid
-        top_list_item = get_top_reccommend(userid=userid, topk=10, user_rarting_matrix=user_cluster_matrix)
+        top_list_item = get_top_reccommend(userid=userid, topk=10, user_rarting_matrix=user_rating_matrix)
 
         return top_list_item
