@@ -37,18 +37,21 @@ BENTO_KMEANS_TAG = "kmeans_artifacts:3vmug2gpfs6qokg7"
 with open("..\\notebook\\x_train_alpha(1).pkl", 'rb') as file: 
     X_train = pickle.load(file) 
 
+X_train2 = X_train
 X_train_tensor = torch.tensor(X_train.to_numpy(), dtype=torch.float32)
 
 
-autoencoder = bentoml.mlflow.get(tag_like=BENTO_AUTOENCODER_TAG).to_runner()
-autoencoder.init_local()
-svc = bentoml.Service('ghrs', runners=[autoencoder])
+autoencoder = bentoml.mlflow.get(BENTO_AUTOENCODER_TAG).to_runner()
+kmeans = bentoml.mlflow.get(BENTO_KMEANS_TAG).to_runner()
 
-@svc.api(input=, output=torch.Tensor)
-def predict(input: Tensor) -> Tensor: 
-    a = autoencoder.predict.run(input)
-    print(a)
+svc = bentoml.Service('ghrs', runners=[autoencoder, kmeans])
 
-if __name__ == "__main__":
-    predict(X_train_tensor)
+@bentoml.service()
+def predict(userid: int) -> list: 
+    encoded_featuers = autoencoder.predict.run(X_train)
+    cluster_labels = kmeans.predict.run(encoded_featuers)
+    #print(cluster_labels)
+    return cluster_labels
 
+
+predict
