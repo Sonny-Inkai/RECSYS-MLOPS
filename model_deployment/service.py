@@ -122,7 +122,10 @@ def get_top_reccommend(userid: int, topk: int, user_rarting_matrix: np.ndarray) 
     top_list_items = [item[0] for item in list_items[:topk]]
     return top_list_items
     
-@bentoml.service()
+@bentoml.service(
+    resources={"cpu": "2"},
+    traffic={"timeout": 10},
+)
 class recommendation:
     @bentoml.api
     def predict(userid: int) -> list: 
