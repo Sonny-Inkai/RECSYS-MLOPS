@@ -117,18 +117,18 @@ def get_top_reccommend(userid: int, topk: int, user_rarting_matrix: np.ndarray) 
     Returns:
         list: list of items to recommend
     """    
-    list_items_score = list(enumerate(user_rarting_matrix[userid-1]))
+    list_items_score = list(enumerate(user_rarting_matrix[userid]))
     list_items = sorted(list_items_score, key=lambda x: x[1], reverse=True)
     top_list_items = [item[0] for item in list_items[:topk]]
     return top_list_items
     
 @bentoml.service(
     resources={"cpu": "2"},
-    traffic={"timeout": 10},
+    traffic={"timeout": 60},
 )
 class recommendation:
     @bentoml.api
-    def predict(userid: int) -> list: 
+    def predict(self, userid: int) -> list: 
         X = X_train.to_numpy()
 
         # Normalize input features
