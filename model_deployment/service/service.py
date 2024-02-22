@@ -17,7 +17,7 @@ import bentoml
 BENTO_AUTOENCODER_TAG = "autoencoder_artifacts:latest"
 BENTO_KMEANS_TAG = "kmeans_artifacts:3vmug2gpfs6qokg7"
 
-with open("..\\notebook\\x_train_alpha(1).pkl", 'rb') as file: 
+with open("C:\\Users\\Theba\\OneDrive\\Documents\\MLOps\\recsys_ops\\RECSYS_MLOPS\\notebook\\x_train_alpha(1).pkl", 'rb') as file: 
     X_train = pickle.load(file) 
 
 # Loading model from bentoml, and turn it into original model when training
@@ -123,8 +123,8 @@ def get_top_reccommend(userid: int, topk: int, user_rarting_matrix: np.ndarray) 
     return top_list_items
     
 @bentoml.service(
-    resources={"cpu": "2"},
-    traffic={"timeout": 60},
+    resources={"cpu": "8"},
+    traffic={"timeout": 1200},
 )
 class recommendation:
     @bentoml.api

@@ -1,0 +1,12 @@
+service: 'service:recommendation'
+labels: 
+  owner: sonny
+  project: recommendation system
+include: 
+- '*.py'
+python:
+  packages:
+  - torch 
+  - numpy
+  - pandas
+  - scikit-learn
