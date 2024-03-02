@@ -1,3 +1,3 @@
 import math
 from sklearn.cluster import KMeans
-import numpys
+import numpy
